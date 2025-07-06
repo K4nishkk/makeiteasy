@@ -10,7 +10,7 @@ const { MongoStore } = mongopkg
 import mongoose from 'mongoose';
 
 const main = async () => {
-    const tempDataPath = path.join(os.tmpdir(), 'tmp/wwebjs');
+    const tempDataPath = path.join(os.tmpdir(), 'wwebjs');
 
     if (!fs.existsSync(tempDataPath)) {
         fs.mkdirSync(tempDataPath, { recursive: true });
