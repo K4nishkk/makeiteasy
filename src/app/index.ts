@@ -1,4 +1,3 @@
-import qrcode from 'qrcode-terminal';
 import path from 'path'
 import os from 'os'
 import pkg from 'whatsapp-web.js';
@@ -27,7 +26,7 @@ const main = async () => {
     });
 
     client.on('qr', (qr) => {
-      qrcode.generate(qr, { small: true });
+      console.log("device not linked via qr")
     });
 
     client.on('remote_session_saved', () => {
