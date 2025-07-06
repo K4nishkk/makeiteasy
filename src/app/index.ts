@@ -1,5 +1,6 @@
 import path from 'path'
 import os from 'os'
+import fs from 'fs'
 import pkg from 'whatsapp-web.js';
 const { Client, RemoteAuth } = pkg;
 
@@ -9,7 +10,11 @@ const { MongoStore } = mongopkg
 import mongoose from 'mongoose';
 
 const main = async () => {
-    const tempDataPath = path.join(os.tmpdir(), 'wwebjs');
+    const tempDataPath = path.join(os.tmpdir(), 'tmp/wwebjs');
+
+    if (!fs.existsSync(tempDataPath)) {
+        fs.mkdirSync(tempDataPath, { recursive: true });
+    }
 
     await mongoose.connect(process.env.DB_URI!);
     await mongoose.connection.asPromise();
@@ -22,8 +27,11 @@ const main = async () => {
                 store,
                 clientId: 'kanishk',
                 dataPath: tempDataPath,
-                backupSyncIntervalMs: 300000,
+                backupSyncIntervalMs: 60000,
             }),
+            webVersionCache: {
+                type: "none"
+            }
         });
 
         client.on('qr', (qr) => {
