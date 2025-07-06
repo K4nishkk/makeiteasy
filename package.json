@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
-    "postinstall": "puppeteer install"
+    "start": "next start"
   },
   "dependencies": {
     "mongoose": "^8.16.1",
