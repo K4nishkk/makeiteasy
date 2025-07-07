@@ -1,6 +1,8 @@
 import { MongoClient } from "mongodb"
 import { initAuthCreds } from "@whiskeysockets/baileys/lib/Utils/auth-utils.js";
 import { BufferJSON } from '@whiskeysockets/baileys';
+import protopkg from "@whiskeysockets/baileys";
+const { proto } = protopkg
 import pkg from 'lodash';
 const { merge } = pkg;
 
@@ -31,6 +33,10 @@ export async function useMongoAuthState(sessionId = 'default') {
     await collection.updateOne({ _id: id }, { $set: { data: serialized } }, { upsert: true })
   }
 
+  async function removeData(id) {
+    await collection.deleteOne({_id: id});
+  }
+
   const state = {
     async state() {
       let creds = await readData(credsId)
@@ -46,26 +52,29 @@ export async function useMongoAuthState(sessionId = 'default') {
         keys: {
           get: async (type, ids) => {
             const data = {}
-            for (const id of ids) {
-              const file = `${type}-${id}.json`
-              const value = await readData(file)
-              
-              if (value) {
-                data[id] = type === 'app-state-sync-key'
-                  ? proto.Message.AppStateSyncKeyData.fromObject(value)
-                  : value
-              } else {
-                console.warn(`[MISSING KEY] ${file} not found`)
-              }
-            }
+            await Promise.all(
+              ids.map(async id => {
+                let value = await readData(`${type}-${id}`)
+                if (type === 'app-state-sync-key' && value) {
+                  value = protopkg.Message.AppStateSyncKeyData.fromObject(value)
+                }
+
+                data[id] = value
+              })
+            )
             return data
           },
           set: async (data) => {
+            console.log(data)
             const tasks = []
-            for (const [key, value] of Object.entries(data)) {
-              keys[key] = value
+            for (const category in data) {
+              for (const id in data[category]) {
+                const fieldId = `${category}-${id}`
+                const value = data[category][id]
+							  tasks.push(value ? writeData(fieldId, value) : removeData(fieldId))
+              }
             }
-            await writeData(keysId, keys)
+            await Promise.all(tasks)
           }
         }
       }

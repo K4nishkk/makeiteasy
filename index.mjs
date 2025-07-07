@@ -4,7 +4,6 @@ import { useMongoAuthState } from './useMongoAuthState.mjs';
 
 const startSock = async () => {
     const { state, saveCreds } = await useMongoAuthState('auth');
-    console.log(await state())
 
     const sock = makeWASocket({
         auth: await state()
@@ -30,12 +29,9 @@ const startSock = async () => {
 
     sock.ev.on('messages.upsert', ({ messages, type }) => {
         if (type === 'notify' && messages[0]?.message?.conversation) {
-            console.log("📩 New message:", messages[0].message.conversation, messages[0].key.remoteJid);
             console.log(messages)
         }
     });
 };
 
 startSock();
-
-// 918427963666@s.whatsapp.net
